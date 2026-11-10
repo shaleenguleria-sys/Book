@@ -310,6 +310,19 @@ body { background: var(--bg); color: var(--ink); }
   .sg .pill-link { transition: translate .2s; }
   .sg .pill-link:hover { translate: 0 -1px; }
 }
+
+/* Email preview */
+.sg .mail { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--bg); font-size: 14px; }
+.sg .mail-bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--sky); }
+.sg .mail-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.sg .mail-bar i:first-child { background: var(--blossom); }
+.sg .mail-bar b { margin-left: 6px; font-size: 13px; }
+.sg .mail-row { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.sg .mail-row span { color: var(--muted); }
+.sg .mail-row b { font-weight: 600; overflow-wrap: anywhere; }
+.sg .mail-body { margin: 0; padding: 12px; font: 400 14px/1.5 var(--body); white-space: pre-wrap; color: var(--ink); max-height: 220px; overflow: auto; }
+.sg .linkish { background: none; border: 0; padding: 6px 4px; font: 600 14px var(--body); color: var(--pine-text); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sg .status:empty { display: none; }
 </style>
 </head>
 <body>
@@ -457,36 +470,25 @@ body { background: var(--bg); color: var(--ink); }
         <p class="priority" style="margin:0"><b>Booked a session?</b> Your request is read first.</p>
       </div>
       <form class="apply" id="apply" novalidate>
-        <div id="ap-fields" class="ap-fields">
-          <h3>Give it your shot</h3>
-          <p class="note">Tell me who you are and why you want in. Rough is fine. Honest beats polished.</p>
-          <div class="two">
-            <label for="ap-name">Your name<input id="ap-name" name="name" autocomplete="name" required placeholder="e.g. Riya Sharma"></label>
-            <label for="ap-email">Your email<input id="ap-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
-          </div>
-          <label for="ap-who">Who are you and what do you do?<input id="ap-who" placeholder="e.g. Final-year student building a waste app"></label>
-          <label for="ap-story">Your story and motivation<textarea id="ap-story" required placeholder="What are you working on, and why does it matter to you?"></textarea></label>
-          <label for="ap-wa">WhatsApp number <span class="opt">(optional)</span><input id="ap-wa" type="tel" autocomplete="tel" placeholder="+91 98765 43210"></label>
-          <input type="text" name="_honey" id="ap-honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <div class="row">
-            <button class="btn send" type="submit" id="ap-send"><span class="lbl" id="ap-lbl">Send my request</span> <span aria-hidden="true">→</span></button>
-            <span class="status" id="ap-status" aria-live="polite"></span>
-          </div>
-          <p class="sendto">Goes straight to my inbox. I read every request myself. Not every request gets in.</p>
-          <div class="fallback" id="ap-fallback" hidden>
-            <p>It couldn't send from here. Copy your request and email it to <b>shaleenguleria@gmail.com</b> with the subject <b>COMMUNITY JOIN</b>.</p>
-            <pre class="preview" id="ap-preview"></pre>
-            <div class="row">
-              <button type="button" class="btn ghost" id="ap-copy">Copy my request</button>
-              <a class="btn ghost" id="ap-mail" href="#">Open email app</a>
-            </div>
-          </div>
+        <h3>Give it your shot</h3>
+        <p class="note">Tell me who you are and why you want in. Rough is fine. Honest beats polished.</p>
+        <label for="ap-name">Your name<input id="ap-name" autocomplete="name" required placeholder="e.g. Riya Sharma"></label>
+        <label for="ap-who">Who are you and what do you do?<input id="ap-who" placeholder="e.g. Final-year student building a waste app"></label>
+        <label for="ap-story">Your story and motivation<textarea id="ap-story" required placeholder="What are you working on, and why does it matter to you?"></textarea></label>
+        <label for="ap-wa">WhatsApp number <span class="opt">(optional)</span><input id="ap-wa" type="tel" autocomplete="tel" placeholder="+91 98765 43210"></label>
+        <div class="mail" aria-label="Preview of your email">
+          <div class="mail-bar"><i></i><i></i><i></i><b>New message</b></div>
+          <div class="mail-row"><span>To</span><b>shaleenguleria@gmail.com</b></div>
+          <div class="mail-row"><span>Subject</span><b id="ap-subj">COMMUNITY JOIN</b></div>
+          <pre class="mail-body" id="ap-preview"></pre>
         </div>
-        <div class="done" id="ap-done" hidden>
-          <div class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h3>Request sent.</h3>
-          <p>I'll read your story and reply to <b id="ap-done-email"></b>. Keep an eye on your inbox, including spam.</p>
+        <div class="row">
+          <a class="btn" id="ap-gmail" href="#" target="_blank" rel="noopener">Send with Gmail <span aria-hidden="true">→</span></a>
+          <a class="btn ghost" id="ap-mail" href="#">Other email app</a>
+          <button type="button" class="linkish" id="ap-copy">Copy text</button>
         </div>
+        <span class="status" id="ap-status" aria-live="polite"></span>
+        <p class="sendto">Your email opens with everything filled in. Just press Send. I read every request myself. Not every request gets in.</p>
       </form>
     </div>
   </section>
@@ -602,60 +604,48 @@ body { background: var(--bg); color: var(--ink); }
     b.addEventListener("click", function () { b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true"); });
   });
 
-  // Community request: send straight from the page
+  // Community request: compose here, send from the visitor's own email
   var EMAIL = "shaleenguleria@gmail.com";
   var $ = function (id) { return document.getElementById(id); };
-  var f = $("apply"), fields = $("ap-fields"), done = $("ap-done");
-  var nameEl = $("ap-name"), emailEl = $("ap-email"), whoEl = $("ap-who"), storyEl = $("ap-story"), waEl = $("ap-wa"), honey = $("ap-honey");
-  var sendBtn = $("ap-send"), lbl = $("ap-lbl"), status = $("ap-status");
-  var fb = $("ap-fallback"), preview = $("ap-preview"), copyBtn = $("ap-copy"), mailA = $("ap-mail");
+  var nameEl = $("ap-name"), whoEl = $("ap-who"), storyEl = $("ap-story"), waEl = $("ap-wa");
+  var subjEl = $("ap-subj"), preview = $("ap-preview"), gmail = $("ap-gmail"), mail = $("ap-mail"), copyBtn = $("ap-copy"), status = $("ap-status");
   function v(el) { return el.value.trim(); }
-  function build() {
-    return "Hi Shaleen,\n\nI'm " + v(nameEl) + ".\n" + (v(whoEl) || "") + "\n\n" + v(storyEl) +
-      "\n\nEmail: " + v(emailEl) + (v(waEl) ? "\nWhatsApp: " + v(waEl) : "") + "\n\nThanks!";
+  function subject() { return "COMMUNITY JOIN" + (v(nameEl) ? ": " + v(nameEl) : ""); }
+  function body() {
+    return "Hi Shaleen,\n\nI'm " + (v(nameEl) || "[your name]") + ".\n" +
+      (v(whoEl) || "[who you are and what you do]") + "\n\n" +
+      (v(storyEl) || "[your story and why you want to join]") +
+      (v(waEl) ? "\n\nWhatsApp: " + v(waEl) : "") + "\n\nThanks!";
   }
-  function showFallback() {
-    preview.textContent = build();
-    mailA.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("COMMUNITY JOIN") + "&body=" + encodeURIComponent(build());
-    fb.hidden = false;
+  function refresh() {
+    subjEl.textContent = subject();
+    preview.textContent = body();
+    gmail.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(EMAIL) + "&su=" + encodeURIComponent(subject()) + "&body=" + encodeURIComponent(body());
+    mail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent(subject()) + "&body=" + encodeURIComponent(body());
   }
-  copyBtn.addEventListener("click", function () {
-    var msg = "Subject: COMMUNITY JOIN\n\n" + build();
-    function sel() { var r = document.createRange(); r.selectNodeContents(preview); var w = window.getSelection(); w.removeAllRanges(); w.addRange(r); copyBtn.textContent = "Selected, press Ctrl+C"; }
-    try { navigator.clipboard.writeText(msg).then(function () { copyBtn.textContent = "Copied"; }, sel); } catch (e) { sel(); }
-  });
-  [nameEl, emailEl, storyEl].forEach(function (el) { el.addEventListener("input", function () { el.classList.remove("bad"); status.textContent = ""; }); });
-  f.addEventListener("submit", function (e) {
-    e.preventDefault();
-    if (honey.value) return;
+  function ready() {
     var missing = [];
     if (!v(nameEl)) missing.push(nameEl);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v(emailEl))) missing.push(emailEl);
     if (!v(storyEl)) missing.push(storyEl);
-    if (missing.length) {
-      missing.forEach(function (el) { el.classList.add("bad"); });
-      missing[0].focus();
-      status.textContent = "Add your name, a valid email and your story.";
-      return;
-    }
-    sendBtn.disabled = true; lbl.textContent = "Sending…"; status.textContent = "";
-    fetch("https://formsubmit.co/ajax/" + EMAIL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({
-        _subject: "COMMUNITY JOIN: " + v(nameEl), _template: "table", _captcha: "false", _replyto: v(emailEl),
-        "Name": v(nameEl), "Email": v(emailEl), "Who they are": v(whoEl) || "-",
-        "Story and motivation": v(storyEl), "WhatsApp": v(waEl) || "-"
-      })
-    }).then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-      .then(function (d) {
-        if (String(d.success) !== "true") throw new Error("not sent");
-        $("ap-done-email").textContent = v(emailEl);
-        fields.hidden = true; done.hidden = false;
-      })
-      .catch(function () { showFallback(); })
-      .then(function () { sendBtn.disabled = false; lbl.textContent = "Send my request"; });
+    missing.forEach(function (el) { el.classList.add("bad"); });
+    if (missing.length) { missing[0].focus(); status.textContent = "Add your name and your story first."; return false; }
+    return true;
+  }
+  [nameEl, whoEl, storyEl, waEl].forEach(function (el) { el.addEventListener("input", function () { el.classList.remove("bad"); status.textContent = ""; refresh(); }); });
+  [gmail, mail].forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      if (!ready()) { e.preventDefault(); return; }
+      refresh();
+      status.textContent = "Your email is open. Press Send there and you're done.";
+    });
   });
+  $("apply").addEventListener("submit", function (e) { e.preventDefault(); });
+  copyBtn.addEventListener("click", function () {
+    var msg = "To: " + EMAIL + "\nSubject: " + subject() + "\n\n" + body();
+    function sel() { var r = document.createRange(); r.selectNodeContents(preview); var w = window.getSelection(); w.removeAllRanges(); w.addRange(r); status.textContent = "Text selected. Press Ctrl+C to copy."; }
+    try { navigator.clipboard.writeText(msg).then(function () { status.textContent = "Copied."; }, sel); } catch (err) { sel(); }
+  });
+  refresh();
 
   // Hover tilt on hero photo, spotlight on community band
   var fine = window.matchMedia && matchMedia("(hover: hover) and (prefers-reduced-motion: no-preference)").matches;
